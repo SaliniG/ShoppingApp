@@ -173,7 +173,7 @@ class _CartScreenState extends State<CartScreen> {
                     height: 20,
                   ),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       const Text("Total", style: headlineTextStyle),
                       Text(
