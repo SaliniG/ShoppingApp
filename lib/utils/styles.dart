@@ -14,3 +14,6 @@ const TextStyle commonTextFieldStyle = TextStyle(fontSize: 16.0, color: kDropDow
 const TextStyle clearTextStyle = TextStyle(fontSize: 16.0, color: errorTextColor, fontFamily: AppConstants.montserratRegular);
 const TextStyle selectedTextStyle = TextStyle(fontSize: 16.0, color: greenColor, fontFamily: AppConstants.montserratRegular);
 const TextStyle headingTextConfirmation = TextStyle(color:kTextColor,fontSize: 15,fontWeight: FontWeight.bold);
+const TextStyle itemNameText = TextStyle(color: Colors.white,fontSize: 18.0, fontWeight: FontWeight.bold,);
+const TextStyle itemPriceText = TextStyle(color: Colors.white,fontSize: 14.0,fontWeight: FontWeight.normal,
+);

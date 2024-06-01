@@ -25,9 +25,6 @@ class _ProductListWidgetState extends State<ProductListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width = MediaQuery.of(context).size.width;
-
     return Selector<ProductProviderClass, bool>(
       selector: (p0, provider) => provider.isListView,
       builder: (context, _, __) {
@@ -54,43 +51,47 @@ class _ProductListWidgetState extends State<ProductListWidget> {
                   );
                 },
                 child: Card(
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        child: ClipRRect(
-                          child: Image(
-                            height: height * 0.14,
-                            width: width * 0.16,
-                            image: NetworkImage(
-                              widget.productList[index].imageUrl,
+                  elevation: 2,
+                  child: ClipPath(
+                    clipper: ShapeBorderClipper(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10))),
+                    child: Stack(
+                      children: <Widget>[
+                        Image(
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          image: NetworkImage(
+                            widget.productList[index].imageUrl,
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: Align(
+                            child: Container(
+                              width: double.infinity,
+                              color: Colors.black.withAlpha(100),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      widget.productList[index].name,
+                                      style: itemNameText,
+                                    ),
+                                    Text(
+                                      '\$${widget.productList[index].price.toStringAsFixed(2)}',
+                                      style: itemPriceText,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              overflow: TextOverflow.ellipsis,
-                              widget.productList[index].name,
-                              style: titleTextStyle,
-                            ),
-                            const SizedBox(
-                              height: 2,
-                            ),
-                            Text(
-                              overflow: TextOverflow.ellipsis,
-                              widget.productList[index].price.toString(),
-                              style: autoCompleteTextStyle,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
