@@ -27,7 +27,7 @@ class PlaceOrderScreen extends StatelessWidget {
             style: headlineTextStyle,
           ),
           Text(
-            "${AppConstants.dollarText}$totalPrice",
+            "${AppConstants.dollarText}${totalPrice.toStringAsFixed(2)}",
             style: headlineTextStyleBold,
           ),
           const Image(
