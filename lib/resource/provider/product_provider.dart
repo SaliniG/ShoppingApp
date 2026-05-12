@@ -5,64 +5,68 @@ import 'package:shopping_app/modal/ui/product_modal.dart';
 import 'package:shopping_app/resource/service.dart';
 
 class ProductProviderClass extends ChangeNotifier {
+  List<ProductModel> _allProducts = [];
   List<ProductModel> _productList = [];
   bool isSearch = false;
   bool isListView = true;
-  String searchQuery = "";
-  List productList = [];
+  String searchQuery = '';
+  String? selectedCategory;
 
   bool get getSearchText => isSearch;
-
-  set setSearchText(bool status) {
-    isSearch = status;
-    notifyListeners();
-  }
-
-  String get getSearchQuery => searchQuery;
-
-  //setter to set search text by name
-  set setSearchQuery(String value) {
-    searchQuery = value;
-    notifyListeners();
-  }
 
   bool get getListViewStatus => isListView;
 
   List<ProductModel> get productsList => _productList;
 
-  //setter to set product list
-  set setProductsList(List<ProductModel> value) {
-    _productList = value;
-  }
+  List<String> get categories =>
+      _allProducts.map((p) => p.category).toSet().toList()..sort();
 
-//function to return  json object from api call
   Future<Response> fetchProductDetails() async {
-    try {
-      setProductsList = [];
-      setSearchText = false;
-      Response response = await Service.fetchProductDetailsData();
-      final List responseBody = json.decode(response.body);
-      setProductsList = responseBody
-          .map((e) => ProductModel.fromJson(e))
-          .toList(); //set response to modal class
-      notifyListeners();
-      return response;
-    } catch (error) {
-      rethrow;
-    }
+    _allProducts = [];
+    _productList = [];
+    isSearch = false;
+    selectedCategory = null;
+    searchQuery = '';
+    Response response = await Service.fetchProductDetailsData();
+    final List responseBody = json.decode(response.body);
+    _allProducts = responseBody.map((e) => ProductModel.fromJson(e)).toList();
+    _productList = List.from(_allProducts);
+    notifyListeners();
+    return response;
   }
 
-//function to return  json object  by name
-  setResults(List<ProductModel> products, String searchString) {
-    setSearchQuery = searchString;
-    //checking search contains in the product list
-    final List<ProductModel> responseBody = products
-        .where((elem) => elem.name
-            .toString()
-            .toLowerCase()
-            .contains(searchString.toLowerCase()))
-        .toList();
-    setProductsList = responseBody;
+  void setCategory(String? category) {
+    selectedCategory = category;
+    _applyFilters();
+  }
+
+  void setResults(List<ProductModel> products, String searchString) {
+    searchQuery = searchString;
+    isSearch = true;
+    _applyFilters();
+  }
+
+  void clearSearch() {
+    searchQuery = '';
+    isSearch = false;
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    List<ProductModel> result = _allProducts;
+
+    if (selectedCategory != null) {
+      result = result.where((p) => p.category == selectedCategory).toList();
+    }
+
+    if (searchQuery.isNotEmpty) {
+      result = result
+          .where((p) =>
+              p.name.toLowerCase().contains(searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    _productList = result;
     notifyListeners();
   }
 }
