@@ -1,14 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/resource/provider/product_provider.dart';
+import 'package:shopping_app/resource/provider/search_history_provider.dart';
 import 'package:shopping_app/resource/provider/theme_provider.dart';
 import 'package:shopping_app/ui/widget/product_list_widget.dart';
 import 'package:shopping_app/ui/widget/product_skeleton_widget.dart';
 import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/utils/styles.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _searchController = TextEditingController();
+  final _focusNode = FocusNode();
+  bool _showHistory = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      setState(() {
+        _showHistory = _focusNode.hasFocus && _searchController.text.isEmpty;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _applySearch(String query, ProductProviderClass provider) {
+    _searchController.text = query;
+    _searchController.selection = TextSelection.collapsed(offset: query.length);
+    provider.setResults(provider.productsList, query);
+    setState(() => _showHistory = false);
+    _focusNode.unfocus();
+  }
+
+  void _onSearchChanged(String value, ProductProviderClass provider) {
+    if (value.isEmpty) {
+      provider.clearSearch();
+      setState(() => _showHistory = _focusNode.hasFocus);
+    } else {
+      provider.setResults(provider.productsList, value);
+      setState(() => _showHistory = false);
+    }
+  }
+
+  void _onSearchSubmitted(String value, ProductProviderClass provider) {
+    if (value.trim().isEmpty) return;
+    Provider.of<SearchHistoryProvider>(context, listen: false).add(value.trim());
+    provider.setResults(provider.productsList, value);
+    setState(() => _showHistory = false);
+    _focusNode.unfocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,16 +92,12 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: _searchController,
+                          focusNode: _focusNode,
                           maxLines: null,
-                          onChanged: (search) {
-                            if (search.isEmpty) {
-                              provider.clearSearch();
-                              FocusScope.of(context).requestFocus(FocusNode());
-                            } else {
-                              provider.setResults(provider.productsList, search);
-                            }
-                          },
-                          textInputAction: TextInputAction.go,
+                          onChanged: (v) => _onSearchChanged(v, provider),
+                          onSubmitted: (v) => _onSearchSubmitted(v, provider),
+                          textInputAction: TextInputAction.search,
                           style: autoCompleteTextStyle,
                           decoration: InputDecoration(
                             isDense: true,
@@ -58,11 +107,16 @@ class HomeScreen extends StatelessWidget {
                             ),
                             hintText: 'Search',
                             hintStyle: searchHintTextStyle,
-                            suffixIcon: const IconButton(
-                              icon: Icon(Icons.search),
-                              onPressed: null,
-                              splashRadius: 20,
-                            ),
+                            suffixIcon: _searchController.text.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear, size: 18),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      provider.clearSearch();
+                                      setState(() => _showHistory = _focusNode.hasFocus);
+                                    },
+                                  )
+                                : const Icon(Icons.search),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
@@ -73,9 +127,7 @@ class HomeScreen extends StatelessWidget {
                       PopupMenuButton<SortOption>(
                         icon: Icon(
                           Icons.sort,
-                          color: provider.sortOption != SortOption.none
-                              ? brandColor
-                              : null,
+                          color: provider.sortOption != SortOption.none ? brandColor : null,
                         ),
                         tooltip: 'Sort',
                         onSelected: provider.setSort,
@@ -88,6 +140,66 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  // Recent search history
+                  if (_showHistory)
+                    Consumer<SearchHistoryProvider>(
+                      builder: (context, historyProvider, _) {
+                        final history = historyProvider.history;
+                        if (history.isEmpty) return const SizedBox.shrink();
+                        return Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Theme.of(context).dividerColor),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(12, 8, 4, 4),
+                                child: Row(
+                                  children: [
+                                    const Text('Recent', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                                    const Spacer(),
+                                    TextButton(
+                                      onPressed: historyProvider.clear,
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.zero,
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      child: const Text('Clear all', style: TextStyle(fontSize: 12, color: brandColor)),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
+                                ),
+                              ),
+                              ...history.map((q) => InkWell(
+                                    onTap: () => _applySearch(q, provider),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      child: Row(
+                                        children: [
+                                          const Icon(Icons.history, size: 16, color: Colors.grey),
+                                          const SizedBox(width: 10),
+                                          Expanded(child: Text(q, style: autoCompleteTextStyle)),
+                                          IconButton(
+                                            icon: const Icon(Icons.close, size: 16, color: Colors.grey),
+                                            padding: EdgeInsets.zero,
+                                            constraints: const BoxConstraints(),
+                                            onPressed: () => historyProvider.remove(q),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  )),
+                              const SizedBox(height: 4),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   const SizedBox(height: 8),
                   // Category filter chips
                   SizedBox(
@@ -115,9 +227,9 @@ class HomeScreen extends StatelessWidget {
                     const ProductSkeletonWidget()
                   else
                     ProductListWidget(
-                    productList: provider.productsList,
-                    onRefresh: () async { await provider.fetchProductDetails(); },
-                  ),
+                      productList: provider.productsList,
+                      onRefresh: () async => provider.fetchProductDetails(),
+                    ),
                 ],
               ),
             ),
