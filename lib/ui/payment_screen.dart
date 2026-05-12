@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:shopping_app/data/cart.dart';
+import 'package:shopping_app/modal/ui/order_model.dart';
+import 'package:shopping_app/resource/provider/order_history_provider.dart';
 import 'package:shopping_app/ui/place_order_screen.dart';
 import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/utils/constants.dart';
@@ -194,6 +198,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   void _placeOrder() {
     if (_selectedMethod == 0 && !(_formKey.currentState?.validate() ?? false)) return;
+
+    final methodLabel = _paymentMethods[_selectedMethod]['label'] as String;
+    final cartMap = Map<dynamic, int>.from(Cart().itemsMap);
+    final order = OrderModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      date: DateTime.now(),
+      totalPrice: widget.totalPrice,
+      paymentMethod: methodLabel,
+      items: cartMap.entries
+          .map((e) => OrderItem(product: e.key, quantity: e.value))
+          .toList(),
+    );
+
+    Provider.of<OrderHistoryProvider>(context, listen: false).addOrder(order);
+    Cart().itemsMap.clear();
+
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(

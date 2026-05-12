@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shopping_app/modal/ui/order_model.dart';
 import 'package:shopping_app/modal/ui/product_modal.dart';
 
 class StorageService {
@@ -40,6 +41,40 @@ class StorageService {
     return decoded
         .map((e) => ProductModel.fromJson(e as Map<String, dynamic>))
         .toSet();
+  }
+
+  static const _ordersKey = 'orders_data';
+
+  static Future<void> saveOrders(List<OrderModel> orders) async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = orders.map((o) => {
+      'id': o.id,
+      'date': o.date.toIso8601String(),
+      'totalPrice': o.totalPrice,
+      'paymentMethod': o.paymentMethod,
+      'items': o.items.map((i) => {
+        'product': _toJson(i.product),
+        'quantity': i.quantity,
+      }).toList(),
+    }).toList();
+    await prefs.setString(_ordersKey, json.encode(data));
+  }
+
+  static Future<List<OrderModel>> loadOrders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_ordersKey);
+    if (raw == null) return [];
+    final List decoded = json.decode(raw);
+    return decoded.map((o) => OrderModel(
+      id: o['id'] as String,
+      date: DateTime.parse(o['date'] as String),
+      totalPrice: (o['totalPrice'] as num).toDouble(),
+      paymentMethod: o['paymentMethod'] as String,
+      items: (o['items'] as List).map((i) => OrderItem(
+        product: ProductModel.fromJson(i['product']),
+        quantity: i['quantity'] as int,
+      )).toList(),
+    )).toList();
   }
 
   static Map<String, dynamic> _toJson(ProductModel p) => {

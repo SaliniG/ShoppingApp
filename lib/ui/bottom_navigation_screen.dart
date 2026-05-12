@@ -6,6 +6,7 @@ import 'package:shopping_app/resource/provider/screen_index_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
 import 'package:shopping_app/ui/cart_screen.dart';
 import 'package:shopping_app/ui/home_screen.dart';
+import 'package:shopping_app/ui/order_history_screen.dart';
 import 'package:shopping_app/ui/wishlist_screen.dart';
 
 class BottomNavigationScreen extends StatelessWidget {
@@ -13,6 +14,7 @@ class BottomNavigationScreen extends StatelessWidget {
     const HomeScreen(),
     const CartScreen(),
     const WishlistScreen(),
+    const OrderHistoryScreen(),
   ];
 
   @override
@@ -60,6 +62,12 @@ class BottomNavigationScreen extends StatelessWidget {
                 );
               },
             ),
+          ),
+          BottomNavigationBarItem(
+            label: 'Orders',
+            icon: Icon(currentScreenIndex == 3
+                ? Icons.receipt_long
+                : Icons.receipt_long_outlined),
           ),
         ],
       ),
