@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shopping_app/resource/provider/screen_index_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
 import 'package:shopping_app/ui/product_details_screen.dart';
 import 'package:shopping_app/utils/colors.dart';
@@ -21,14 +22,48 @@ class WishlistScreen extends StatelessWidget {
           builder: (context, provider, _) {
             final items = provider.items;
             if (items.isEmpty) {
-              return const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.favorite_border, size: 80, color: Colors.grey),
-                    SizedBox(height: 16),
-                    Text('No favourites yet', style: headlineTextStyle),
-                  ],
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: brandColor.withAlpha(20),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.favorite_border, size: 60, color: brandColor),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text('No favourites yet', style: headlineTextStyleSemiBold),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Save items you love by tapping the heart icon.',
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Provider.of<ScreenIndexProvider>(context, listen: false)
+                              .updateScreenIndex(0);
+                        },
+                        icon: const Icon(Icons.explore_outlined),
+                        label: const Text('Explore Products'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: brandColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }
