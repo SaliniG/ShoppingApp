@@ -3,24 +3,40 @@ import 'package:provider/provider.dart';
 import 'package:shopping_app/resource/provider/cart_provider.dart';
 import 'package:shopping_app/resource/provider/product_provider.dart';
 import 'package:shopping_app/resource/provider/screen_index_provider.dart';
+import 'package:shopping_app/resource/provider/theme_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
 import 'package:shopping_app/ui/bottom_navigation_screen.dart';
+import 'package:shopping_app/utils/colors.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(ShoppingApp());
 
-class MyApp extends StatelessWidget {
+class ShoppingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => ScreenIndexProvider()),
-        ChangeNotifierProvider(create: (context) => ProductProviderClass()),
-        ChangeNotifierProvider(create: (context) => CartProvider()),
-        ChangeNotifierProvider(create: (context) => WishlistProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => ScreenIndexProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProviderClass()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => WishlistProvider()),
       ],
-      child: MaterialApp(
-        home: BottomNavigationScreen(),
-        debugShowCheckedModeBanner: false,
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) => MaterialApp(
+          debugShowCheckedModeBanner: false,
+          themeMode: themeProvider.themeMode,
+          theme: ThemeData(
+            colorSchemeSeed: brandColor,
+            brightness: Brightness.light,
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData(
+            colorSchemeSeed: brandColor,
+            brightness: Brightness.dark,
+            useMaterial3: true,
+          ),
+          home: BottomNavigationScreen(),
+        ),
       ),
     );
   }

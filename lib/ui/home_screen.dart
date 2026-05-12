@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/resource/provider/product_provider.dart';
+import 'package:shopping_app/resource/provider/theme_provider.dart';
 import 'package:shopping_app/ui/widget/product_list_widget.dart';
 import 'package:shopping_app/ui/widget/product_skeleton_widget.dart';
 import 'package:shopping_app/utils/colors.dart';
@@ -16,6 +17,15 @@ class HomeScreen extends StatelessWidget {
         title: const Text('Shopping App', style: headlineTextStyleSemiBold),
         centerTitle: true,
         automaticallyImplyLeading: false,
+        actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, theme, _) => IconButton(
+              icon: Icon(theme.isDark ? Icons.light_mode : Icons.dark_mode),
+              tooltip: theme.isDark ? 'Light mode' : 'Dark mode',
+              onPressed: theme.toggle,
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
