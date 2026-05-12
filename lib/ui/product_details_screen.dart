@@ -94,7 +94,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           rating: widget.productModel.rating,
                           count: widget.productModel.ratingCount,
                           size: 16,
-                          textColor: Colors.black54,
+                          textColor: null,
                         ),
                       ],
                     ),

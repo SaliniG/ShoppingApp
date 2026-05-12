@@ -91,10 +91,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: _selectedMethod == i ? brandColor.withAlpha(30) : Colors.white,
+                        color: _selectedMethod == i ? brandColor.withAlpha(30) : Theme.of(context).colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: _selectedMethod == i ? brandColor : Colors.grey.shade300,
+                          color: _selectedMethod == i ? brandColor : Theme.of(context).dividerColor,
                           width: _selectedMethod == i ? 2 : 1,
                         ),
                       ),

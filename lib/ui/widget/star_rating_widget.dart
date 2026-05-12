@@ -5,7 +5,7 @@ class StarRatingWidget extends StatelessWidget {
   final int count;
   final double size;
   final bool showCount;
-  final Color textColor;
+  final Color? textColor;
 
   const StarRatingWidget({
     required this.rating,
