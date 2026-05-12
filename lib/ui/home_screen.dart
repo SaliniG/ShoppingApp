@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/resource/provider/product_provider.dart';
 import 'package:shopping_app/ui/widget/product_list_widget.dart';
+import 'package:shopping_app/ui/widget/product_skeleton_widget.dart';
 import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/utils/styles.dart';
 
@@ -77,7 +78,10 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ProductListWidget(productList: provider.productsList),
+                  if (provider.isLoading)
+                    const ProductSkeletonWidget()
+                  else
+                    ProductListWidget(productList: provider.productsList),
                 ],
               ),
             ),

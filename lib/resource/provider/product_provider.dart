@@ -7,6 +7,7 @@ import 'package:shopping_app/resource/service.dart';
 class ProductProviderClass extends ChangeNotifier {
   List<ProductModel> _allProducts = [];
   List<ProductModel> _productList = [];
+  bool isLoading = false;
   bool isSearch = false;
   bool isListView = true;
   String searchQuery = '';
@@ -27,10 +28,13 @@ class ProductProviderClass extends ChangeNotifier {
     isSearch = false;
     selectedCategory = null;
     searchQuery = '';
+    isLoading = true;
+    notifyListeners();
     Response response = await Service.fetchProductDetailsData();
     final List responseBody = json.decode(response.body);
     _allProducts = responseBody.map((e) => ProductModel.fromJson(e)).toList();
     _productList = List.from(_allProducts);
+    isLoading = false;
     notifyListeners();
     return response;
   }
