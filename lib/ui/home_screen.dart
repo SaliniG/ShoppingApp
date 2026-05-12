@@ -81,7 +81,10 @@ class HomeScreen extends StatelessWidget {
                   if (provider.isLoading)
                     const ProductSkeletonWidget()
                   else
-                    ProductListWidget(productList: provider.productsList),
+                    ProductListWidget(
+                    productList: provider.productsList,
+                    onRefresh: () async { await provider.fetchProductDetails(); },
+                  ),
                 ],
               ),
             ),

@@ -10,8 +10,9 @@ import 'package:shopping_app/utils/styles.dart';
 
 class ProductListWidget extends StatefulWidget {
   List<ProductModel> productList;
+  final Future<void> Function()? onRefresh;
 
-  ProductListWidget({required this.productList, Key? key}) : super(key: key);
+  ProductListWidget({required this.productList, this.onRefresh, Key? key}) : super(key: key);
 
   @override
   State<ProductListWidget> createState() => _ProductListWidgetState();
@@ -35,7 +36,7 @@ class _ProductListWidgetState extends State<ProductListWidget> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final columns = (constraints.maxWidth / 160).floor().clamp(2, 6);
-              return GridView.builder(
+              final grid = GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: columns,
                 childAspectRatio: 0.72,
@@ -134,6 +135,10 @@ class _ProductListWidgetState extends State<ProductListWidget> {
               );
             },
           );
+          if (widget.onRefresh != null) {
+            return RefreshIndicator(onRefresh: widget.onRefresh!, child: grid);
+          }
+          return grid;
         },
           ),
         );
