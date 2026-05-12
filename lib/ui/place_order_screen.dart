@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/resource/provider/screen_index_provider.dart';
 import 'package:shopping_app/ui/bottom_navigation_screen.dart';
-import 'package:shopping_app/utils/assets_path.dart';
 import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/utils/constants.dart';
 import 'package:shopping_app/utils/styles.dart';
@@ -14,52 +13,98 @@ class PlaceOrderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _screenIndexProvider = Provider.of<ScreenIndexProvider>(context);
-    _screenIndexProvider.updateScreenIndex(0);
+    final screenIndexProvider = Provider.of<ScreenIndexProvider>(context);
+    screenIndexProvider.updateScreenIndex(0);
 
     return Scaffold(
-      backgroundColor: kTextColor,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            "Total Payment amount.",
-            style: headlineTextStyle,
-          ),
-          Text(
-            "${AppConstants.dollarText}${totalPrice.toStringAsFixed(2)}",
-            style: headlineTextStyleBold,
-          ),
-          const Image(
-            image: AssetImage(greenTickImagePath),
-          ),
-          const Text(
-            "Order is successfully placed.",
-            style: headlineTextStyle,
-          ),
-          InkWell(
-            onTap: () {
-              Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: (context) => BottomNavigationScreen()),
-                  (route) => false);
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Container(
-                height: 50,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Spacer(),
+
+              // Success icon
+              Container(
+                width: 100,
+                height: 100,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15), color: brandColor),
-                child: const Center(
-                  child: Text(
-                    "GO BACK. ENJOY SHOPPING!",
-                    style: headingTextConfirmation,
-                  ),
+                  color: Colors.green.withAlpha(30),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_circle, color: Colors.green, size: 64),
+              ),
+              const SizedBox(height: 24),
+
+              // Title
+              const Text(
+                'Order Placed!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: kDropDownItemTextColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Your order has been placed successfully.',
+                style: autoCompleteTextStyle,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+
+              // Amount card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  children: [
+                    const Text('Amount Paid', style: titleTextStyle),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${AppConstants.dollarText}${totalPrice.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: brandColor,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+
+              const Spacer(),
+
+              // Back button
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => BottomNavigationScreen()),
+                    (route) => false,
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: brandColor,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                child: const Text('Continue Shopping', style: TextStyle(color: kTextColor)),
+              ),
+              const SizedBox(height: 24),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:shopping_app/data/cart.dart';
 import 'package:shopping_app/modal/ui/product_modal.dart';
 import 'package:shopping_app/resource/provider/cart_provider.dart';
-import 'package:shopping_app/ui/place_order_screen.dart';
+import 'package:shopping_app/ui/payment_screen.dart';
 import 'package:shopping_app/utils/assets_path.dart';
 import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/utils/constants.dart';
@@ -23,10 +23,8 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   void initState() {
-    //initialize singleton cart class
     Cart cart = Cart();
     cartProvider = Provider.of<CartProvider>(context, listen: false);
-    //getting items from cart and added to cart list
     cart.itemsMap.forEach((k, v) => cartList.add(k));
     super.initState();
   }
@@ -34,182 +32,178 @@ class _CartScreenState extends State<CartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: cartList.isEmpty
-          ? const Center(
-              child: Image(
-                image: AssetImage(cartEmptyImagePath),
-              ),
-            )
-          : Consumer<CartProvider>(
-              builder: (context, value, child) => Column(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: cartList.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Card(
-                          clipBehavior: Clip.antiAlias,
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      width: 80,
-                                      child: ClipRect(
-                                        child: Image(
-                                          image: NetworkImage(
-                                            cartList[index].imageUrl,
+      appBar: AppBar(
+        title: const Text('My Cart', style: headlineTextStyleSemiBold),
+        centerTitle: true,
+        automaticallyImplyLeading: false,
+      ),
+      body: SafeArea(
+        child: cartList.isEmpty
+            ? const Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image(image: AssetImage(cartEmptyImagePath)),
+                    SizedBox(height: 12),
+                    Text('Your cart is empty', style: headlineTextStyle),
+                  ],
+                ),
+              )
+            : Consumer<CartProvider>(
+                builder: (context, value, child) => Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        itemCount: cartList.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final product = cartList[index];
+                          final qty = Cart().itemsMap[product] ?? 0;
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Row(
+                                children: [
+                                  // Product image
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      product.imageUrl,
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.contain,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  // Product info
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          product.name,
+                                          style: titleTextStyle,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Selector<CartProvider, bool>(
+                                          selector: (_, p) => p.isUpdateCount,
+                                          builder: (_, __, ___) => Text(
+                                            '\$${(product.price * (Cart().itemsMap[product] ?? 0)).toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              color: Colors.green,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                      ],
                                     ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text(cartList[index].name),
-                                    Selector<CartProvider, bool>(
-                                        selector: (p0, provider) =>
-                                            provider.isUpdateCount,
-                                        builder: (context, _, __) {
-                                          return Text(
-                                            (cartList[index].price *
-                                                    (Cart().itemsMap[
-                                                            cartList[index]] ??
-                                                        0))
-                                                .toStringAsFixed(2),
-                                            style: const TextStyle(
-                                                color: Colors.green,
-                                                fontSize: 15),
-                                          );
-                                        }),
-                                  ],
-                                ),
-                                SizedBox(
-                                  child:
-                                      // to set the quantity
-                                      Row(
-                                    children: [
-                                      InkWell(
-                                        onTap: () {
-                                          //function call to decrement the item quantity
-                                          Cart cart = Cart();
-                                          ProductModel product =
-                                              cartList[index];
-                                          int currentValue =
-                                              cart.itemsMap[product] ?? 0;
-                                          int newValue = currentValue - 1;
-                                          if (newValue <= 0) {
-                                            cart.itemsMap.remove(product);
-                                          } else {
-                                            cart.itemsMap[product] = newValue;
-                                          }
-
-                                          value.decrementCounter(newValue);
-                                          //function call to decrement the total price from the current price
-                                          value.subtractPrice(
-                                              cartList[index].price);
-                                        },
-                                        child: Selector<CartProvider, bool>(
-                                          selector: (p0, provider) =>
-                                              provider.isUpdateCount,
-                                          builder: (context, _, __) {
-                                            return const Icon(
-                                              Icons.remove_circle,
-                                              size: 40,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      Text(
-                                        "${Cart().itemsMap[cartList[index]] ?? 0}",
-                                        style: headlineTextStyleSemiBold,
-                                      ),
-                                      const SizedBox(
-                                        width: 10,
-                                      ),
-                                      InkWell(
-                                          onTap: () {
-                                            Cart cart = Cart();
-                                            //function call to increment the item quantity
-                                            ProductModel product =
-                                                cartList[index];
-                                            int currentValue =
-                                                cart.itemsMap[product] ?? 0;
-                                            int newValue = currentValue + 1;
-                                            cart.itemsMap[product] = newValue;
-
-                                            value.incrementCounter(newValue);
-                                            //function call to added the total price from the current price
-                                            value.addPrice(
-                                                cartList[index].price);
-                                          },
-                                          child: Selector<CartProvider, bool>(
-                                              selector: (p0, provider) =>
-                                                  provider.isUpdateCount,
-                                              builder: (context, _, __) {
-                                                return const Icon(
-                                                  Icons.add_circle,
-                                                  size: 40,
-                                                );
-                                              })),
-                                    ],
                                   ),
-                                )
-                              ],
+                                  const SizedBox(width: 8),
+                                  // Quantity controls
+                                  Selector<CartProvider, bool>(
+                                    selector: (_, p) => p.isUpdateCount,
+                                    builder: (_, __, ___) => Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            final currentValue = Cart().itemsMap[product] ?? 0;
+                                            final newValue = currentValue - 1;
+                                            if (newValue <= 0) {
+                                              Cart().itemsMap.remove(product);
+                                            } else {
+                                              Cart().itemsMap[product] = newValue;
+                                            }
+                                            value.decrementCounter(newValue);
+                                            value.subtractPrice(product.price);
+                                          },
+                                          child: const Icon(Icons.remove_circle, size: 32, color: brandColor),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                                          child: Text(
+                                            '$qty',
+                                            style: headlineTextStyleSemiBold,
+                                          ),
+                                        ),
+                                        InkWell(
+                                          onTap: () {
+                                            final currentValue = Cart().itemsMap[product] ?? 0;
+                                            Cart().itemsMap[product] = currentValue + 1;
+                                            value.incrementCounter(currentValue + 1);
+                                            value.addPrice(product.price);
+                                          },
+                                          child: const Icon(Icons.add_circle, size: 32, color: brandColor),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    // Total & checkout
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(20),
+                            blurRadius: 8,
+                            offset: const Offset(0, -2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Total', style: titleTextStyle),
+                              Text(
+                                '${AppConstants.dollarText}${value.totalPrice.toStringAsFixed(2)}',
+                                style: headlineTextStyleBold,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PaymentScreen(totalPrice: value.totalPrice),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: brandColor,
+                              minimumSize: const Size(200, 44),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                            child: const Text(
+                              'Proceed to Checkout',
+                              style: TextStyle(color: kTextColor),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      const Text("Total", style: headlineTextStyle),
-                      Text(
-                        "${AppConstants.dollarText}${(value.totalPrice).toStringAsFixed(2)}",
-                        style: headlineTextStyleBold,
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                PlaceOrderScreen(totalPrice: value.totalPrice),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: brandColor,
-                          // fromHeight use double.infinity as width and 40 is the height
-                          minimumSize: const Size.fromHeight(40),
-                          padding: const EdgeInsets.all(10),
-                          textStyle: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold)),
-                      child: const Text(
-                        'PROCEED TO CHECKOUT',
-                        style: TextStyle(color: kTextColor),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

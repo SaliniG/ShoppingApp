@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/modal/ui/product_modal.dart';
 import 'package:shopping_app/resource/provider/product_provider.dart';
+import 'package:shopping_app/resource/provider/wishlist_provider.dart';
 import 'package:shopping_app/ui/product_details_screen.dart';
+import 'package:shopping_app/ui/widget/star_rating_widget.dart';
+import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/utils/styles.dart';
 
 class ProductListWidget extends StatefulWidget {
@@ -29,12 +32,16 @@ class _ProductListWidgetState extends State<ProductListWidget> {
       selector: (p0, provider) => provider.isListView,
       builder: (context, _, __) {
         return Expanded(
-          child: GridView.builder(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final columns = (constraints.maxWidth / 160).floor().clamp(2, 6);
+              return GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount:
-                    MediaQuery.of(context).orientation == Orientation.landscape
-                        ? 3
-                        : 2),
+                crossAxisCount: columns,
+                childAspectRatio: 0.72,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
             itemCount: widget.productList.length,
             itemBuilder: (BuildContext context, int index) {
               return GestureDetector(
@@ -65,29 +72,59 @@ class _ProductListWidgetState extends State<ProductListWidget> {
                             widget.productList[index].imageUrl,
                           ),
                         ),
-                        Positioned.fill(
-                          child: Align(
-                            child: Container(
-                              width: double.infinity,
-                              color: Colors.black.withAlpha(100),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      widget.productList[index].name,
-                                      style: itemNameText,
-                                    ),
-                                    Text(
-                                      '\$${widget.productList[index].price.toStringAsFixed(2)}',
-                                      style: itemPriceText,
-                                    ),
-                                  ],
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            color: Colors.black.withAlpha(160),
+                            padding: const EdgeInsets.all(6.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  widget.productList[index].name,
+                                  style: itemNameText,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
+                                Text(
+                                  '\$${widget.productList[index].price.toStringAsFixed(2)}',
+                                  style: itemPriceText,
+                                ),
+                                const SizedBox(height: 2),
+                                StarRatingWidget(
+                                  rating: widget.productList[index].rating,
+                                  count: widget.productList[index].ratingCount,
+                                  size: 11,
+                                ),
+                              ],
                             ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Consumer<WishlistProvider>(
+                            builder: (context, wishlist, _) {
+                              final isWishlisted = wishlist.isWishlisted(widget.productList[index]);
+                              return GestureDetector(
+                                onTap: () => wishlist.toggle(widget.productList[index]),
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    isWishlisted ? Icons.favorite : Icons.favorite_border,
+                                    color: brandColor,
+                                    size: 20,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ],
@@ -96,6 +133,8 @@ class _ProductListWidgetState extends State<ProductListWidget> {
                 ),
               );
             },
+          );
+        },
           ),
         );
       },
