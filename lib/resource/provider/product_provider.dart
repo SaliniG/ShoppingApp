@@ -4,6 +4,8 @@ import 'package:http/http.dart';
 import 'package:shopping_app/modal/ui/product_modal.dart';
 import 'package:shopping_app/resource/service.dart';
 
+enum SortOption { none, priceLow, priceHigh, ratingHigh }
+
 class ProductProviderClass extends ChangeNotifier {
   List<ProductModel> _allProducts = [];
   List<ProductModel> _productList = [];
@@ -12,6 +14,7 @@ class ProductProviderClass extends ChangeNotifier {
   bool isListView = true;
   String searchQuery = '';
   String? selectedCategory;
+  SortOption sortOption = SortOption.none;
 
   bool get getSearchText => isSearch;
 
@@ -28,6 +31,7 @@ class ProductProviderClass extends ChangeNotifier {
     isSearch = false;
     selectedCategory = null;
     searchQuery = '';
+    sortOption = SortOption.none;
     isLoading = true;
     notifyListeners();
     Response response = await Service.fetchProductDetailsData();
@@ -37,6 +41,11 @@ class ProductProviderClass extends ChangeNotifier {
     isLoading = false;
     notifyListeners();
     return response;
+  }
+
+  void setSort(SortOption option) {
+    sortOption = option;
+    _applyFilters();
   }
 
   void setCategory(String? category) {
@@ -68,6 +77,14 @@ class ProductProviderClass extends ChangeNotifier {
           .where((p) =>
               p.name.toLowerCase().contains(searchQuery.toLowerCase()))
           .toList();
+    }
+
+    if (sortOption == SortOption.priceLow) {
+      result.sort((a, b) => a.price.compareTo(b.price));
+    } else if (sortOption == SortOption.priceHigh) {
+      result.sort((a, b) => b.price.compareTo(a.price));
+    } else if (sortOption == SortOption.ratingHigh) {
+      result.sort((a, b) => b.rating.compareTo(a.rating));
     }
 
     _productList = result;

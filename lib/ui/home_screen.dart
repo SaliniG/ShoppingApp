@@ -25,35 +25,58 @@ class HomeScreen extends StatelessWidget {
             child: Consumer<ProductProviderClass>(
               builder: (context, provider, child) => Column(
                 children: [
-                  TextField(
-                    maxLines: null,
-                    onChanged: (search) {
-                      if (search.isEmpty) {
-                        provider.clearSearch();
-                        FocusScope.of(context).requestFocus(FocusNode());
-                      } else {
-                        provider.setResults(provider.productsList, search);
-                      }
-                    },
-                    textInputAction: TextInputAction.go,
-                    style: autoCompleteTextStyle,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 8,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          maxLines: null,
+                          onChanged: (search) {
+                            if (search.isEmpty) {
+                              provider.clearSearch();
+                              FocusScope.of(context).requestFocus(FocusNode());
+                            } else {
+                              provider.setResults(provider.productsList, search);
+                            }
+                          },
+                          textInputAction: TextInputAction.go,
+                          style: autoCompleteTextStyle,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
+                            hintText: 'Search',
+                            hintStyle: searchHintTextStyle,
+                            suffixIcon: const IconButton(
+                              icon: Icon(Icons.search),
+                              onPressed: null,
+                              splashRadius: 20,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
                       ),
-                      hintText: 'Search',
-                      hintStyle: searchHintTextStyle,
-                      suffixIcon: const IconButton(
-                        icon: Icon(Icons.search),
-                        onPressed: null,
-                        splashRadius: 20,
+                      const SizedBox(width: 8),
+                      PopupMenuButton<SortOption>(
+                        icon: Icon(
+                          Icons.sort,
+                          color: provider.sortOption != SortOption.none
+                              ? brandColor
+                              : null,
+                        ),
+                        tooltip: 'Sort',
+                        onSelected: provider.setSort,
+                        itemBuilder: (_) => [
+                          _sortItem(SortOption.none, 'Default', provider.sortOption),
+                          _sortItem(SortOption.priceLow, 'Price: Low to High', provider.sortOption),
+                          _sortItem(SortOption.priceHigh, 'Price: High to Low', provider.sortOption),
+                          _sortItem(SortOption.ratingHigh, 'Top Rated', provider.sortOption),
+                        ],
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   // Category filter chips
@@ -96,6 +119,22 @@ class HomeScreen extends StatelessWidget {
 
   String _formatCategory(String cat) {
     return cat.split(' ').map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
+  }
+
+  PopupMenuItem<SortOption> _sortItem(SortOption value, String label, SortOption current) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          if (current == value)
+            const Icon(Icons.check, size: 16, color: brandColor)
+          else
+            const SizedBox(width: 16),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
+      ),
+    );
   }
 }
 
