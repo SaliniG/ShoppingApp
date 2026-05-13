@@ -106,6 +106,19 @@ class _ProductListWidgetState extends State<ProductListWidget> {
                         ),
                         Positioned(
                           top: 4,
+                          left: 4,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (widget.productList[index].rating >= 4.5)
+                                _Badge(label: '⭐ Top Rated', color: Colors.amber.shade700),
+                              if (widget.productList[index].price < 25)
+                                _Badge(label: '🏷️ Sale', color: Colors.redAccent),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          top: 4,
                           right: 4,
                           child: Consumer<WishlistProvider>(
                             builder: (context, wishlist, _) {
@@ -143,6 +156,33 @@ class _ProductListWidgetState extends State<ProductListWidget> {
           ),
         );
       },
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _Badge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }
