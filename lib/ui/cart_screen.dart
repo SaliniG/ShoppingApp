@@ -17,10 +17,19 @@ class CartScreen extends StatefulWidget {
   State<CartScreen> createState() => _CartScreenState();
 }
 
+const Map<String, int> _validCoupons = {
+  'SAVE10': 10,
+  'SAVE20': 20,
+  'HALF50': 50,
+  'WELCOME': 15,
+};
+
 class _CartScreenState extends State<CartScreen> {
   List<ProductModel> cartList = [];
-
   late CartProvider cartProvider;
+  final _couponController = TextEditingController();
+  String? _appliedCoupon;
+  int _discountPercent = 0;
 
   @override
   void initState() {
@@ -29,6 +38,38 @@ class _CartScreenState extends State<CartScreen> {
     cart.itemsMap.forEach((k, v) => cartList.add(k));
     super.initState();
   }
+
+  @override
+  void dispose() {
+    _couponController.dispose();
+    super.dispose();
+  }
+
+  void _applyCoupon() {
+    final code = _couponController.text.trim().toUpperCase();
+    if (_validCoupons.containsKey(code)) {
+      setState(() {
+        _appliedCoupon = code;
+        _discountPercent = _validCoupons[code]!;
+      });
+      FocusScope.of(context).unfocus();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid coupon code'), duration: Duration(seconds: 2)),
+      );
+    }
+  }
+
+  void _removeCoupon() {
+    setState(() {
+      _appliedCoupon = null;
+      _discountPercent = 0;
+      _couponController.clear();
+    });
+  }
+
+  double _discountedTotal(double total) =>
+      total * (1 - _discountPercent / 100);
 
   @override
   Widget build(BuildContext context) {
@@ -192,12 +233,81 @@ class _CartScreenState extends State<CartScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Coupon field
+                if (_appliedCoupon == null)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _couponController,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                            hintText: 'Coupon code',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _applyCoupon,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: brandColor,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: const Text('Apply', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    children: [
+                      const Icon(Icons.local_offer, color: brandColor, size: 18),
+                      const SizedBox(width: 6),
+                      Text('$_appliedCoupon — $_discountPercent% off',
+                          style: const TextStyle(color: brandColor, fontWeight: FontWeight.w600)),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close, size: 18),
+                        onPressed: _removeCoupon,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 10),
+                // Total rows
+                if (_appliedCoupon != null) ...[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Subtotal', style: titleTextStyle),
+                      Text('${AppConstants.dollarText}${value.totalPrice.toStringAsFixed(2)}',
+                          style: titleTextStyle),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Discount ($_discountPercent%)',
+                          style: const TextStyle(color: Colors.green, fontSize: 13)),
+                      Text(
+                        '- ${AppConstants.dollarText}${(value.totalPrice - _discountedTotal(value.totalPrice)).toStringAsFixed(2)}',
+                        style: const TextStyle(color: Colors.green, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 12),
+                ],
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Total', style: titleTextStyle),
                     Text(
-                      '${AppConstants.dollarText}${value.totalPrice.toStringAsFixed(2)}',
+                      '${AppConstants.dollarText}${_discountedTotal(value.totalPrice).toStringAsFixed(2)}',
                       style: headlineTextStyleBold,
                     ),
                   ],
@@ -208,7 +318,7 @@ class _CartScreenState extends State<CartScreen> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => PaymentScreen(totalPrice: value.totalPrice),
+                        builder: (_) => PaymentScreen(totalPrice: _discountedTotal(value.totalPrice)),
                       ),
                     );
                   },
