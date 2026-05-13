@@ -93,7 +93,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   isWishlisted ? Icons.favorite : Icons.favorite_border,
                   color: brandColor,
                 ),
-                onPressed: () => wishlist.toggle(widget.productModel),
+                onPressed: () {
+                  wishlist.toggle(widget.productModel);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(isWishlisted
+                        ? 'Removed from wishlist'
+                        : 'Added to wishlist ❤️'),
+                    duration: const Duration(seconds: 2),
+                  ));
+                },
               );
             },
           ),
@@ -157,6 +165,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               cart.itemsMap[product] = currentValue + 1;
                               value.incrementCounter(currentValue + 1);
                               value.addPrice(widget.productModel.price);
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                content: Text('Added to cart 🛒'),
+                                duration: Duration(seconds: 2),
+                              ));
                             },
                             icon: const Icon(Icons.add_shopping_cart, color: kTextColor),
                             label: const Text(

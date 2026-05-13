@@ -124,7 +124,16 @@ class _ProductListWidgetState extends State<ProductListWidget> {
                             builder: (context, wishlist, _) {
                               final isWishlisted = wishlist.isWishlisted(widget.productList[index]);
                               return GestureDetector(
-                                onTap: () => wishlist.toggle(widget.productList[index]),
+                                onTap: () {
+                                  final isWishlisted = wishlist.isWishlisted(widget.productList[index]);
+                                  wishlist.toggle(widget.productList[index]);
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(isWishlisted
+                                        ? 'Removed from wishlist'
+                                        : 'Added to wishlist ❤️'),
+                                    duration: const Duration(seconds: 2),
+                                  ));
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.all(4),
                                   decoration: const BoxDecoration(
