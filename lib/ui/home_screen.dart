@@ -55,6 +55,60 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _showPriceFilter(BuildContext context, ProductProviderClass provider) {
+    RangeValues range = RangeValues(provider.selectedMinPrice, provider.selectedMaxPrice);
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('Price Range', style: headlineTextStyleSemiBold),
+                  const Spacer(),
+                  if (provider.isPriceFiltered)
+                    TextButton(
+                      onPressed: () {
+                        provider.clearPriceFilter();
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Clear', style: TextStyle(color: brandColor)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('\$${range.start.toStringAsFixed(0)}',
+                      style: const TextStyle(color: brandColor, fontWeight: FontWeight.bold)),
+                  Text('\$${range.end.toStringAsFixed(0)}',
+                      style: const TextStyle(color: brandColor, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              RangeSlider(
+                values: range,
+                min: provider.minPrice,
+                max: provider.maxPrice,
+                divisions: 20,
+                activeColor: brandColor,
+                onChanged: (v) => setModalState(() => range = v),
+                onChangeEnd: (v) => provider.setPriceRange(v.start, v.end),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _onSearchSubmitted(String value, ProductProviderClass provider) {
     if (value.trim().isEmpty) return;
     Provider.of<SearchHistoryProvider>(context, listen: false).add(value.trim());
@@ -124,6 +178,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
+                      IconButton(
+                        icon: Icon(
+                          Icons.tune,
+                          color: provider.isPriceFiltered ? brandColor : null,
+                        ),
+                        tooltip: 'Price filter',
+                        onPressed: () => _showPriceFilter(context, provider),
+                      ),
                       PopupMenuButton<SortOption>(
                         icon: Icon(
                           Icons.sort,

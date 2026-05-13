@@ -15,6 +15,13 @@ class ProductProviderClass extends ChangeNotifier {
   String searchQuery = '';
   String? selectedCategory;
   SortOption sortOption = SortOption.none;
+  double minPrice = 0;
+  double maxPrice = 0;
+  double selectedMinPrice = 0;
+  double selectedMaxPrice = 0;
+
+  bool get isPriceFiltered =>
+      selectedMinPrice > minPrice || selectedMaxPrice < maxPrice;
 
   bool get getSearchText => isSearch;
 
@@ -38,9 +45,27 @@ class ProductProviderClass extends ChangeNotifier {
     final List responseBody = json.decode(response.body);
     _allProducts = responseBody.map((e) => ProductModel.fromJson(e)).toList();
     _productList = List.from(_allProducts);
+    if (_allProducts.isNotEmpty) {
+      minPrice = _allProducts.map((p) => p.price).reduce((a, b) => a < b ? a : b);
+      maxPrice = _allProducts.map((p) => p.price).reduce((a, b) => a > b ? a : b);
+      selectedMinPrice = minPrice;
+      selectedMaxPrice = maxPrice;
+    }
     isLoading = false;
     notifyListeners();
     return response;
+  }
+
+  void setPriceRange(double min, double max) {
+    selectedMinPrice = min;
+    selectedMaxPrice = max;
+    _applyFilters();
+  }
+
+  void clearPriceFilter() {
+    selectedMinPrice = minPrice;
+    selectedMaxPrice = maxPrice;
+    _applyFilters();
   }
 
   void setSort(SortOption option) {
@@ -76,6 +101,12 @@ class ProductProviderClass extends ChangeNotifier {
       result = result
           .where((p) =>
               p.name.toLowerCase().contains(searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    if (selectedMaxPrice > 0) {
+      result = result
+          .where((p) => p.price >= selectedMinPrice && p.price <= selectedMaxPrice)
           .toList();
     }
 
