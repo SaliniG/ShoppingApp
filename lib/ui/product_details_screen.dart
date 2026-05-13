@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shopping_app/data/cart.dart';
+import 'package:shopping_app/resource/provider/compare_provider.dart';
 import 'package:shopping_app/modal/ui/product_modal.dart';
 import 'package:shopping_app/resource/provider/cart_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
@@ -45,6 +46,34 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          Consumer<CompareProvider>(
+            builder: (context, compare, _) {
+              final inCompare = compare.contains(widget.productModel);
+              final canAdd = !compare.isFull || inCompare;
+              return IconButton(
+                icon: Icon(
+                  Icons.compare_arrows,
+                  color: inCompare ? brandColor : null,
+                ),
+                tooltip: inCompare ? 'Remove from compare' : 'Add to compare',
+                onPressed: canAdd
+                    ? () {
+                        compare.toggle(widget.productModel);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(inCompare
+                                ? 'Removed from compare'
+                                : compare.isReady
+                                    ? 'Ready to compare! Tap the bar below.'
+                                    : 'Added to compare. Select one more product.'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    : null,
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.share_outlined),
             tooltip: 'Share',

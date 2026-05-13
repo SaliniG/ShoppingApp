@@ -4,7 +4,10 @@ import 'package:shopping_app/data/cart.dart';
 import 'package:shopping_app/resource/provider/cart_provider.dart';
 import 'package:shopping_app/resource/provider/screen_index_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
+import 'package:shopping_app/resource/provider/compare_provider.dart';
+import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/ui/cart_screen.dart';
+import 'package:shopping_app/ui/compare_screen.dart';
 import 'package:shopping_app/ui/home_screen.dart';
 import 'package:shopping_app/ui/order_history_screen.dart';
 import 'package:shopping_app/ui/profile_screen.dart';
@@ -24,8 +27,23 @@ class BottomNavigationScreen extends StatelessWidget {
     final screenIndexProvider = Provider.of<ScreenIndexProvider>(context);
     int currentScreenIndex = screenIndexProvider.fetchCurrentScreenIndex;
 
-    return Scaffold(
-      bottomNavigationBar: BottomNavigationBar(
+    return Consumer<CompareProvider>(
+      builder: (context, compare, _) => Scaffold(
+        floatingActionButton: compare.count > 0
+            ? FloatingActionButton.extended(
+                backgroundColor: brandColor,
+                icon: const Icon(Icons.compare_arrows, color: Colors.white),
+                label: Text(
+                  compare.isReady ? 'Compare Now' : '1 selected',
+                  style: const TextStyle(color: Colors.white),
+                ),
+                onPressed: compare.isReady
+                    ? () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const CompareScreen()))
+                    : null,
+              )
+            : null,
+        bottomNavigationBar: BottomNavigationBar(
         elevation: 1,
         currentIndex: currentScreenIndex,
         onTap: (value) => screenIndexProvider.updateScreenIndex(value),
@@ -79,7 +97,8 @@ class BottomNavigationScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: screens[currentScreenIndex],
+        body: screens[currentScreenIndex],
+      ),
     );
   }
 }
