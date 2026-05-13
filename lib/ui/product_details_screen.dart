@@ -4,7 +4,10 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shopping_app/data/cart.dart';
 import 'package:shopping_app/resource/provider/compare_provider.dart';
 import 'package:shopping_app/modal/ui/product_modal.dart';
+import 'package:shopping_app/modal/ui/review_model.dart';
 import 'package:shopping_app/resource/provider/cart_provider.dart';
+import 'package:shopping_app/resource/provider/profile_provider.dart';
+import 'package:shopping_app/resource/provider/review_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
 import 'package:shopping_app/ui/widget/star_rating_widget.dart';
 import 'package:shopping_app/utils/colors.dart';
@@ -196,6 +199,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    const Divider(),
+                    _ReviewSection(productId: widget.productModel.name),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -203,6 +209,143 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ReviewSection extends StatefulWidget {
+  final String productId;
+  const _ReviewSection({required this.productId});
+
+  @override
+  State<_ReviewSection> createState() => _ReviewSectionState();
+}
+
+class _ReviewSectionState extends State<_ReviewSection> {
+  final _commentController = TextEditingController();
+  int _selectedRating = 5;
+  bool _showForm = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final comment = _commentController.text.trim();
+    if (comment.isEmpty) return;
+    final author = Provider.of<ProfileProvider>(context, listen: false).name;
+    Provider.of<ReviewProvider>(context, listen: false).addReview(
+      ReviewModel(
+        productId: widget.productId,
+        author: author.isEmpty ? 'Anonymous' : author,
+        rating: _selectedRating,
+        comment: comment,
+        date: DateTime.now(),
+      ),
+    );
+    _commentController.clear();
+    setState(() { _showForm = false; _selectedRating = 5; });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Review submitted!'), duration: Duration(seconds: 2)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ReviewProvider>(
+      builder: (context, reviewProvider, _) {
+        final reviews = reviewProvider.forProduct(widget.productId);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('Reviews (${reviews.length})', style: headlineTextStyleSemiBold),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: () => setState(() => _showForm = !_showForm),
+                  icon: Icon(_showForm ? Icons.close : Icons.rate_review_outlined,
+                      color: brandColor, size: 18),
+                  label: Text(_showForm ? 'Cancel' : 'Write a review',
+                      style: const TextStyle(color: brandColor)),
+                ),
+              ],
+            ),
+            if (_showForm) ...[
+              const SizedBox(height: 8),
+              // Star selector
+              Row(
+                children: List.generate(5, (i) => GestureDetector(
+                  onTap: () => setState(() => _selectedRating = i + 1),
+                  child: Icon(
+                    i < _selectedRating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 28,
+                  ),
+                )),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _commentController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'Write your review...',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: brandColor,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Submit', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+            if (reviews.isEmpty)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text('No reviews yet. Be the first!',
+                    style: TextStyle(color: Colors.grey)),
+              )
+            else
+              ...reviews.map((r) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(r.author,
+                                style: const TextStyle(fontWeight: FontWeight.w600)),
+                            const Spacer(),
+                            ...List.generate(5, (i) => Icon(
+                                  i < r.rating ? Icons.star : Icons.star_border,
+                                  color: Colors.amber, size: 14)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(r.comment, style: autoCompleteTextStyle),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${r.date.day}/${r.date.month}/${r.date.year}',
+                          style: const TextStyle(color: Colors.grey, fontSize: 11),
+                        ),
+                        const Divider(),
+                      ],
+                    ),
+                  )),
+          ],
+        );
+      },
     );
   }
 }

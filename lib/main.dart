@@ -5,6 +5,7 @@ import 'package:shopping_app/resource/provider/compare_provider.dart';
 import 'package:shopping_app/resource/provider/order_history_provider.dart';
 import 'package:shopping_app/resource/provider/product_provider.dart';
 import 'package:shopping_app/resource/provider/profile_provider.dart';
+import 'package:shopping_app/resource/provider/review_provider.dart';
 import 'package:shopping_app/resource/provider/search_history_provider.dart';
 import 'package:shopping_app/resource/provider/screen_index_provider.dart';
 import 'package:shopping_app/resource/provider/theme_provider.dart';
@@ -27,6 +28,7 @@ class ShoppingApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SearchHistoryProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => CompareProvider()),
+        ChangeNotifierProvider(create: (_) => ReviewProvider()),
         ChangeNotifierProvider(create: (_) => WishlistProvider()),
       ],
       child: Consumer<ThemeProvider>(
