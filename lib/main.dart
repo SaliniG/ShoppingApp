@@ -12,8 +12,7 @@ import 'package:shopping_app/resource/provider/screen_index_provider.dart';
 import 'package:shopping_app/resource/provider/search_history_provider.dart';
 import 'package:shopping_app/resource/provider/theme_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
-import 'package:shopping_app/ui/auth/login_screen.dart';
-import 'package:shopping_app/ui/bottom_navigation_screen.dart';
+import 'package:shopping_app/ui/splash_screen.dart';
 import 'package:shopping_app/utils/colors.dart';
 
 void main() async {
@@ -53,11 +52,7 @@ class ShoppingApp extends StatelessWidget {
             brightness: Brightness.dark,
             useMaterial3: true,
           ),
-          home: Consumer<AuthProvider>(
-            builder: (context, auth, _) => auth.isLoggedIn
-                ? BottomNavigationScreen()
-                : const LoginScreen(),
-          ),
+          home: const SplashScreen(),
         ),
       ),
     );
