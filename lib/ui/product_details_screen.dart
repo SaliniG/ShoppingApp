@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shopping_app/data/cart.dart';
 import 'package:shopping_app/modal/ui/product_modal.dart';
 import 'package:shopping_app/resource/provider/cart_provider.dart';
@@ -44,6 +45,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Share',
+            onPressed: () {
+              final product = widget.productModel;
+              Share.share(
+                '🛍️ ${product.name}\n\$${product.price.toStringAsFixed(2)}\n\nCheck it out on Shopping App!',
+                subject: product.name,
+              );
+            },
+          ),
           Consumer<WishlistProvider>(
             builder: (context, wishlist, _) {
               final isWishlisted = wishlist.isWishlisted(widget.productModel);
