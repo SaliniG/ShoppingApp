@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/data/cart.dart';
+import 'package:shopping_app/resource/provider/auth_provider.dart';
 import 'package:shopping_app/resource/provider/order_history_provider.dart';
 import 'package:shopping_app/resource/provider/profile_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
@@ -60,6 +61,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 setState(() => _editing = true);
               }
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Sign out',
+            onPressed: () => Provider.of<AuthProvider>(context, listen: false).signOut(),
           ),
         ],
       ),
