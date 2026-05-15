@@ -24,6 +24,14 @@ class CartProvider with ChangeNotifier {
   set setTotalPrice(double price) => totalPrice = price;
   set count(int count) => productCount = count;
 
+  void clear() {
+    Cart().itemsMap.clear();
+    totalPrice = 0.0;
+    productCount = null;
+    StorageService.saveCart(Cart().itemsMap);
+    notifyListeners();
+  }
+
   incrementCounter(int quantity) {
     count = quantity;
     setUpdateCount = false;

@@ -16,6 +16,12 @@ class OrderHistoryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> clear() async {
+    _orders = [];
+    await StorageService.saveOrders(_orders);
+    notifyListeners();
+  }
+
   Future<void> addOrder(OrderModel order) async {
     _orders.insert(0, order);
     await StorageService.saveOrders(_orders);

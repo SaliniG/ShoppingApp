@@ -14,7 +14,9 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return null;
     } on FirebaseAuthException catch (e) {
-      return e.message;
+      return _message(e);
+    } catch (_) {
+      return 'Something went wrong. Please try again.';
     }
   }
 
@@ -24,7 +26,27 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return null;
     } on FirebaseAuthException catch (e) {
-      return e.message;
+      return _message(e);
+    } catch (_) {
+      return 'Something went wrong. Please try again.';
+    }
+  }
+
+  String _message(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'user-not-found':
+      case 'invalid-credential':
+        return 'Incorrect email or password.';
+      case 'wrong-password':
+        return 'Incorrect password.';
+      case 'email-already-in-use':
+        return 'An account with this email already exists.';
+      case 'invalid-email':
+        return 'Enter a valid email address.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please try again later.';
+      default:
+        return e.message ?? 'Something went wrong. Please try again.';
     }
   }
 

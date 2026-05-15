@@ -3,10 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileProvider extends ChangeNotifier {
   static const _nameKey = 'profile_name';
-  static const _emailKey = 'profile_email';
 
   String name = '';
-  String email = '';
 
   ProfileProvider() {
     _load();
@@ -15,16 +13,20 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
     name = prefs.getString(_nameKey) ?? '';
-    email = prefs.getString(_emailKey) ?? '';
     notifyListeners();
   }
 
-  Future<void> save({required String newName, required String newEmail}) async {
+  Future<void> save({required String newName}) async {
     name = newName.trim();
-    email = newEmail.trim();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_nameKey, name);
-    await prefs.setString(_emailKey, email);
+    notifyListeners();
+  }
+
+  Future<void> clear() async {
+    name = '';
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_nameKey);
     notifyListeners();
   }
 }

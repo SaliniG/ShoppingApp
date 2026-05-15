@@ -35,13 +35,13 @@ class _ProductListWidgetState extends State<ProductListWidget> {
         return Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final columns = (constraints.maxWidth / 160).floor().clamp(2, 6);
+              final columns = (constraints.maxWidth / 140).floor().clamp(3, 5);
               final grid = GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: columns,
-                childAspectRatio: 0.72,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
+                childAspectRatio: 0.68,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
               ),
             itemCount: widget.productList.length,
             itemBuilder: (BuildContext context, int index) {

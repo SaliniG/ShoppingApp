@@ -5,6 +5,7 @@ import 'package:shopping_app/resource/provider/auth_provider.dart';
 import 'package:shopping_app/resource/provider/order_history_provider.dart';
 import 'package:shopping_app/resource/provider/profile_provider.dart';
 import 'package:shopping_app/resource/provider/wishlist_provider.dart';
+import 'package:shopping_app/ui/auth/login_screen.dart';
 import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/utils/styles.dart';
 
@@ -17,7 +18,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _nameController;
-  late TextEditingController _emailController;
   bool _editing = false;
 
   @override
@@ -25,26 +25,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     final profile = Provider.of<ProfileProvider>(context, listen: false);
     _nameController = TextEditingController(text: profile.name);
-    _emailController = TextEditingController(text: profile.email);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _emailController.dispose();
     super.dispose();
   }
 
   void _save() {
     Provider.of<ProfileProvider>(context, listen: false).save(
       newName: _nameController.text,
-      newEmail: _emailController.text,
     );
     setState(() => _editing = false);
   }
 
+  Future<void> _signOut() async {
+    await Provider.of<AuthProvider>(context, listen: false).signOut();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (_) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final email =
+        Provider.of<AuthProvider>(context, listen: false).currentUser?.email ?? '';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile', style: headlineTextStyleSemiBold),
@@ -65,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Sign out',
-            onPressed: () => Provider.of<AuthProvider>(context, listen: false).signOut(),
+            onPressed: _signOut,
           ),
         ],
       ),
@@ -113,19 +122,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   style: headlineTextStyleSemiBold,
                                 ),
                           const SizedBox(height: 8),
-                          _editing
-                              ? TextField(
-                                  controller: _emailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Email',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                )
-                              : Text(
-                                  profile.email.isEmpty ? 'your@email.com' : profile.email,
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
+                          // Email is always read-only — comes from Firebase Auth
+                          Text(
+                            email.isEmpty ? 'your@email.com' : email,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
                         ],
                       ),
                     ),
@@ -175,8 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () =>
-                          Provider.of<AuthProvider>(context, listen: false).signOut(),
+                      onPressed: _signOut,
                       icon: const Icon(Icons.logout, color: Colors.red),
                       label: const Text('Sign Out',
                           style: TextStyle(color: Colors.red, fontSize: 15)),

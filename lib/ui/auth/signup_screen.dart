@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/resource/provider/auth_provider.dart';
+import 'package:shopping_app/resource/provider/cart_provider.dart';
+import 'package:shopping_app/resource/provider/order_history_provider.dart';
+import 'package:shopping_app/resource/provider/profile_provider.dart';
+import 'package:shopping_app/resource/provider/wishlist_provider.dart';
 import 'package:shopping_app/utils/colors.dart';
 import 'package:shopping_app/utils/styles.dart';
 
@@ -35,7 +39,16 @@ class _SignupScreenState extends State<SignupScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
-    if (mounted) setState(() { _loading = false; _error = error; });
+    if (!mounted) return;
+    if (error == null) {
+      Provider.of<CartProvider>(context, listen: false).clear();
+      Provider.of<WishlistProvider>(context, listen: false).clear();
+      Provider.of<OrderHistoryProvider>(context, listen: false).clear();
+      Provider.of<ProfileProvider>(context, listen: false).clear();
+      Navigator.of(context).pop();
+    } else {
+      setState(() { _loading = false; _error = error; });
+    }
   }
 
   @override
@@ -71,9 +84,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscure,
+                  enableSuggestions: false,
+                  autocorrect: false,
                   decoration: _inputDecoration('Password', Icons.lock_outline).copyWith(
                     suffixIcon: IconButton(
-                      icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                      icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                       onPressed: () => setState(() => _obscure = !_obscure),
                     ),
                   ),
@@ -84,6 +99,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 TextFormField(
                   controller: _confirmController,
                   obscureText: _obscure,
+                  enableSuggestions: false,
+                  autocorrect: false,
                   decoration: _inputDecoration('Confirm Password', Icons.lock_outline),
                   validator: (v) => v != _passwordController.text
                       ? 'Passwords do not match'

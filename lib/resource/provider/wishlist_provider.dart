@@ -18,6 +18,12 @@ class WishlistProvider with ChangeNotifier {
 
   void _save() => StorageService.saveWishlist(Wishlist().items);
 
+  void clear() {
+    Wishlist().items.clear();
+    StorageService.saveWishlist(Wishlist().items);
+    notifyListeners();
+  }
+
   bool isWishlisted(ProductModel product) => Wishlist().items.contains(product);
 
   void toggle(ProductModel product) {

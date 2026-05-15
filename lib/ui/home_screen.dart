@@ -184,7 +184,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: provider.isPriceFiltered ? brandColor : null,
                         ),
                         tooltip: 'Price filter',
-                        onPressed: () => _showPriceFilter(context, provider),
+                        onPressed: () {
+                          _focusNode.unfocus();
+                          _showPriceFilter(context, provider);
+                        },
                       ),
                       PopupMenuButton<SortOption>(
                         icon: Icon(
@@ -193,6 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         tooltip: 'Sort',
                         onSelected: provider.setSort,
+                        onOpened: () => _focusNode.unfocus(),
                         itemBuilder: (_) => [
                           _sortItem(SortOption.none, 'Default', provider.sortOption),
                           _sortItem(SortOption.priceLow, 'Price: Low to High', provider.sortOption),
