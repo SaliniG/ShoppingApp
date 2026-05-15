@@ -1,4 +1,20 @@
-# Shopping App Documentation
+# Shopping App
+
+## Screenshots
+
+| Login | Sign Up | Home |
+|-------|---------|------|
+| ![Login](screenshots/login.png) | ![Sign Up](screenshots/signup.png) | ![Home](screenshots/home.png) |
+
+| Product Details | Wishlist | Cart |
+|----------------|----------|------|
+| ![Product Details](screenshots/product_details.png) | ![Wishlist](screenshots/wishlist.png) | ![Cart](screenshots/cart.png) |
+
+| Payment | Orders | Profile | Compare |
+|---------|--------|---------|---------|
+| ![Payment](screenshots/payment.png) | ![Orders](screenshots/orders.png) | ![Profile](screenshots/profile.png) | ![Compare](screenshots/compare.png) |
+
+---
 
 ## Overview
 A Flutter shopping app that allows users to browse products, filter by category, manage a wishlist, add products to a cart, and place orders via a payment screen. The app follows the MVVM pattern, uses the Provider package for state management, and fetches real product data from [FakeStoreAPI](https://fakestoreapi.com).
