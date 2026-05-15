@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_app/data/cart.dart';
 import 'package:shopping_app/modal/ui/order_model.dart';
+import 'package:shopping_app/resource/provider/cart_provider.dart';
 import 'package:shopping_app/resource/provider/order_history_provider.dart';
 import 'package:shopping_app/ui/place_order_screen.dart';
 import 'package:shopping_app/utils/colors.dart';
@@ -212,7 +213,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
 
     Provider.of<OrderHistoryProvider>(context, listen: false).addOrder(order);
-    Cart().itemsMap.clear();
+    Provider.of<CartProvider>(context, listen: false).clear();
 
     Navigator.pushReplacement(
       context,

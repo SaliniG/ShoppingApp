@@ -67,6 +67,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (_editing) {
                 _save();
               } else {
+                _nameController.text =
+                    Provider.of<ProfileProvider>(context, listen: false).name;
                 setState(() => _editing = true);
               }
             },
